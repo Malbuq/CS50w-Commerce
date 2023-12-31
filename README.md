@@ -1,2 +1,4 @@
 # CS50w-Commerce
- Projeto 2 do curso CS50W
+ CS50W's second project
+
+ to run it you must have Django installed
