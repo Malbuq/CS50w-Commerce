@@ -1,0 +1,22 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    Categories
+{% endblock %}
+
+{% block body %}
+
+    <h2>Avaliable categories</h2> 
+    <div class="principal-box-category">
+        {% for category in listCategories %}
+            <form action="{% url 'viewCategory' category.id %}" method="post">
+                {% csrf_token %}
+                <input class="comment-btn" type="submit" value={{category.categoryName}}>
+                <input type="hidden" name="categoryId" value="{{ category.id }}">
+            </form>
+        {% endfor %}
+            
+    </div>
+        
+        
+{% endblock %}

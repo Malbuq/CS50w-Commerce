@@ -1,0 +1,33 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings</h2>
+    <div class="principal-box">
+        {% for item in listings %}
+            {% if item.isActive %}
+                <a class="item-box-link" href="{% url 'viewListing' item.id %}">
+                    <div class="item-box">
+                        <div class="image-div">
+                            {% if item.imageURL != "" %}             
+                            <img class="image-box" src="{{ item.imageURL }}" alt="Items corresponding image">
+                            {% else %}
+                            <img src="https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg" alt="No image icon">
+                            {% endif %}
+                        </div>
+                        <div class="item-info-div">
+                            <h3>{{item.title}}</h3>
+                                {% if item.bids.all|length == 0 %}
+                                    <h4><span>Price: </span> ${{item.startBid|floatformat:2}}</h4>
+                                {% else %}
+                                    <h4><span>Price: </span>${{item.bids.last.value|floatformat:2}}</h4>
+                                {% endif %}
+                                <p>{{item.description}}</p>           
+                        </div>
+                        <hr>
+                    </div>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+        
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<h2>Listing: {{item.title}}</h2>
+
+<div class="principal-box-view">
+    
+    {% if user.is_authenticated %}
+        {% if item.owner == user %}
+            
+            {% if item.isActive %}
+                <form action="{% url 'desactiveListing' %}" method="post">
+                    {% csrf_token %}
+                    <input class="watchlist-btn" type="submit" value="Close item">
+                    <input type="hidden" name="listingId" value="{{ item.id }}" />
+                </form>
+            {% else %}
+                <input class="watchlist-btn" type="submit" value="You've closed this item!">
+            {% endif %}
+
+        {% elif item in user.watchlist.all and item.isActive %}
+
+            <form action="{% url 'removeWatchlist' item.id %}" method="post">
+                {% csrf_token %}
+                <input class="watchlist-btn" type="submit" value="Unwatch it">
+                <input type="hidden" name="interestedUserId" value="{{ user.id }}" />
+            </form>
+
+        {% elif item not in user.watchlist.all and item.isActive %}
+            <form action="{% url 'addWatchlist' item.id %}" method="post">
+                {% csrf_token %}
+                <input class="watchlist-btn" type="submit" value="Wacthlist">
+                <input type="hidden" name="interestedUserId" value="{{ user.id }}" />
+            </form>
+        
+        {% elif item.isActive == False and item.bids.last.bidder == user %}
+
+            <h4>You've won the auction. This item is yours now!</h4>
+
+        {% elif item.isActive == False %} 
+        
+            <h4>This item is no longer avaliable</h4>
+            
+        {% endif %}
+    {% elif user.is_authenticated == False and item.isActive == False %}
+        <h4>This item is no longer avaliable</h4>
+    {% endif %}
+    
+    <div class="image-view-listing-div">
+        {% if item.imageURL != "" %}             
+            <img class="image-box" src="{{ item.imageURL }}" alt="Items corresponding image">
+        {% else %}
+            <img src="https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg" alt="No image icon">
+        {% endif %}
+    </div>
+    
+    <p>{{item.description}}</p>
+
+    {% if item.bids.all.count == 0 %}
+        <h2>${{item.startBid|floatformat:2}}</h2>
+    {% else %}
+        <h2>${{item.bids.last.value|floatformat:2}}</h2>
+    {% endif %}
+    
+    {% if user.is_authenticated and item.isActive %}
+
+        {% if message %}
+            <div class="error-message-div">{{ message }}</div>
+        {% endif %}
+        
+        {% if item.bids.all.count == 0 %}
+        
+            <p>No bids for this item so far. Be the first to bid!</p>
+        
+        {% else %}
+
+        <p>{{item.bids.all.count}} bid(s) so far.</p>
+        
+                {% if item.bids.last.bidder == user %}
+                    <p>Your bid is the current bid.</p>
+                {% endif %}
+
+        {% endif %}
+
+        <form action="{% url 'makeBid' item.id %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input class="form-control" name="bid" placeholder="Bid"></input>
+                <input type="hidden" name="bidderId" value="{{ user.id }}" />
+            </div>
+            
+            <input class="btn btn-primary" type="submit" value="Place bid">
+        </form>
+        
+    {% elif user.is_authenticated == False and item.isActive %} 
+    
+        <h4><a href="{% url 'login' %}"> Log In to bid</a></h4>
+    
+    {% elif user.is_authenticated == False and item.isActive == False %} 
+    
+    {% endif %} 
+    
+    <h4>Details</h4>
+    <ul>Listed by: {{item.owner.username.title}}</ul>
+    <ul>
+        {% if item.category == null %}
+        Category: No Category Listed
+        {% else %}
+        Category: {{item.category.categoryName}}
+        {% endif %}
+    </ul>
+    
+    <h2>Comentary Section</h2>
+    <div class="principal-commentary-box">
+        {% if user.is_authenticated %}
+
+        <form action="{% url 'makeComment' item.id %}" method="post">
+            {% csrf_token %}
+            <div class="make-comentery-box">
+                <textarea class="form-control" name="content" placeholder="Add a comment" rows="3"></textarea>
+            </div>
+            <input type="hidden" name="commenterId" value="{{ user.id }}" />
+            <input class="comment-btn" type="submit" value="Comment"></input>
+        </form>
+       
+        {% else %} 
+        
+        <div class="log-in-box-commentary">
+            <h4><a href="{% url 'login' %}"> Log In to comment</a></h4>
+        </div>
+        
+        {% endif %} 
+
+        {% for commentary in item.commentaries.all %}
+        <div class="commentary-box">
+            <p>{{commentary.date.date}}:</p>
+            <span>{{commentary.commenter.username.title}}:</span>
+            <p>{{commentary.content}}</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+</div>
+{% endblock %}
